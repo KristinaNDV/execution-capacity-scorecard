@@ -4,38 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Execution Capacity Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #14213d;
-    --navy-light: #1f2f52;
-    --slate: #495467;
-    --slate-light: #7a8499;
-    --gold: #b8862c;
-    --bg: #f5f6f8;
-    --card: #ffffff;
-    --border: #e1e4ea;
-    --strength: #2f7d5c;
-    --refine: #a8791c;
-    --leverage: #a5442a;
+    /* Brand — drawn from neurodivergentventures.com */
+    --navy: #172846;
+    --navy-light: #26385c;
+    --slate: #545f75;
+    --slate-light: #8891a3;
+    --plum: #6d3459;
+    --coral: #df7b57;
+    --pink: #bb477a;
+    --cream: #eaddce;
+    --paper: #f8f3ec;
+    --card: #fffdfa;
+    --border: #e6dccb;
+    /* Status — validated for CVD separation + contrast (see scripts/validate_palette.js) */
+    --strength: #12805a;
+    --refine: #b8860b;
+    --leverage: #c0392b;
     --radius: 10px;
+    --gradient: linear-gradient(100deg, var(--coral), var(--pink));
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    background: var(--bg);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--paper);
     color: var(--navy);
     line-height: 1.5;
+    position: relative;
   }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap { position: relative; z-index: 1; }
   .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
   header.app-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 28px 20px;
+    background: var(--cream);
+    color: var(--navy);
+    padding: 28px 20px 22px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid transparent;
+    border-image: var(--gradient) 1;
   }
-  header.app-header .wrap { padding-top: 0; padding-bottom: 0; }
-  header.app-header h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: 0.2px; }
-  header.app-header p { margin: 0; color: #c7cede; font-size: 14px; max-width: 640px; }
+  header.app-header .wrap { padding-top: 0; padding-bottom: 0; position: relative; z-index: 1; }
+  header.app-header h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+  }
+  header.app-header p { margin: 0; color: var(--slate); font-size: 14px; max-width: 620px; }
+  header.app-header .squiggle {
+    position: absolute;
+    top: -18px;
+    right: -10px;
+    width: 180px;
+    height: auto;
+    opacity: 0.9;
+    z-index: 0;
+  }
+  @media (max-width: 640px) { header.app-header .squiggle { width: 110px; top: -8px; } }
 
   .card {
     background: var(--card);
@@ -43,8 +83,9 @@
     border-radius: var(--radius);
     padding: 24px;
     margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(23,40,70,0.04), 0 8px 24px -18px rgba(23,40,70,0.25);
   }
-  .card h2 { margin-top: 0; font-size: 17px; color: var(--navy); }
+  .card h2 { margin-top: 0; font-size: 17px; color: var(--navy); font-weight: 700; }
   .card h3 { font-size: 15px; color: var(--navy); margin-bottom: 6px; }
   .muted { color: var(--slate-light); font-size: 13px; }
 
@@ -68,8 +109,8 @@
   .scale input { display: none; }
   .scale input:checked + span { display: block; }
   .scale label.selected {
-    background: var(--navy);
-    border-color: var(--navy);
+    background: var(--plum);
+    border-color: var(--plum);
     color: #fff;
     font-weight: 600;
   }
@@ -96,17 +137,19 @@
   }
 
   button.primary, a.primary {
-    background: var(--navy);
+    background: var(--plum);
     color: #fff;
     border: none;
     padding: 14px 22px;
     border-radius: 8px;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     width: 100%;
+    transition: background .15s ease, transform .1s ease;
   }
-  button.primary:disabled { background: #b8bdc9; cursor: not-allowed; }
+  button.primary:hover:not(:disabled) { background: #5c2b49; }
+  button.primary:disabled { background: #cdc3c8; cursor: not-allowed; }
   button.secondary, a.secondary {
     background: transparent;
     color: var(--navy);
@@ -118,6 +161,29 @@
     cursor: pointer;
   }
   .progress-note { text-align: center; font-size: 12.5px; color: var(--slate-light); margin-top: 10px; }
+
+  .progress-track-wrap {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    z-index: 3;
+  }
+  .progress-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--gradient); border-radius: 4px; transition: width .25s ease; }
+  .progress-label { font-size: 12px; color: var(--slate); margin-top: 6px; text-align: right; }
+
+  .domain-group-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--plum);
+    margin: 26px 0 4px;
+  }
+  .domain-group-title:first-of-type { margin-top: 6px; }
 
   .tag {
     display: inline-block;
@@ -144,6 +210,32 @@
 
   .reflect-item { font-style: italic; color: var(--navy-light); font-size: 14px; border-left: 3px solid var(--border); padding-left: 14px; }
 
+  .score-chart { margin: 4px 0 0; }
+  .score-chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--slate);
+  }
+  .score-chart-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .score-row-label {
+    width: 158px;
+    flex-shrink: 0;
+    font-size: 11.5px;
+    color: var(--navy);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .score-row-track { flex: 1; height: 9px; background: var(--border); border-radius: 5px; overflow: hidden; }
+  .score-row-fill { height: 100%; border-radius: 5px; }
+  .score-row-value { width: 14px; flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--navy); }
+  @media (max-width: 560px) { .score-row-label { width: 100px; font-size: 10.5px; } }
+
   .rec-banner {
     display: flex;
     justify-content: space-between;
@@ -151,14 +243,15 @@
     flex-wrap: wrap;
     gap: 12px;
     background: var(--navy);
+    background-image: linear-gradient(120deg, var(--navy) 55%, var(--plum) 140%);
     color: #fff;
     border-radius: var(--radius);
     padding: 22px 24px;
     margin-bottom: 20px;
   }
-  .rec-banner .friction-level { font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; color: #c7cede; }
-  .rec-banner .program-name { font-size: 20px; font-weight: 700; margin-top: 4px; }
-  .rec-banner .foci { font-size: 12.5px; color: #c7cede; margin-top: 6px; }
+  .rec-banner .friction-level { font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; color: #e3c9d8; }
+  .rec-banner .program-name { font-size: 20px; font-weight: 800; margin-top: 4px; }
+  .rec-banner .foci { font-size: 12.5px; color: #e3c9d8; margin-top: 6px; }
 
   .strengths-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (max-width: 560px) { .strengths-grid { grid-template-columns: 1fr; } }
@@ -172,7 +265,7 @@
   .hidden { display: none !important; }
 
   .intro-extra {
-    background: #f0f3f9;
+    background: var(--paper);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 14px 16px;
@@ -186,6 +279,36 @@
   .intro-extra .meta { font-size: 13px; color: var(--slate); }
   .intro-extra .meta strong { color: var(--navy); display: block; font-size: 13.5px; }
   .intro-nav { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 22px 0 26px;
+  }
+  @media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .step-title { font-weight: 700; font-size: 14px; color: var(--navy); margin-bottom: 4px; }
+  .step-desc { font-size: 12.5px; color: var(--slate); line-height: 1.45; }
 
   .field-group { margin-bottom: 14px; }
   .field-group label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--slate-light); margin-bottom: 4px; }
@@ -229,6 +352,16 @@
 <body>
 
 <header class="app-header">
+  <svg class="squiggle" viewBox="0 0 180 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="squiggleGrad" x1="0%" y1="0%" x2="100%" y2="60%">
+        <stop offset="0%" stop-color="#df7b57"/>
+        <stop offset="100%" stop-color="#bb477a"/>
+      </linearGradient>
+    </defs>
+    <path d="M5 55 C 30 15, 55 65, 80 30 S 130 10, 150 40 S 165 60, 175 35"
+          stroke="url(#squiggleGrad)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  </svg>
   <div class="wrap">
     <h1>Execution Capacity Scorecard</h1>
     <p>A quick read on how well strategy turns into results in your business — where execution is strong, where it's quietly costing you time and momentum, and what to fix first. Built for owners and executives, in plain business language.</p>
@@ -242,11 +375,28 @@
     <div id="intro-extras"></div>
     <h2>What this measures</h2>
     <p class="muted" style="font-size:13.5px; color:var(--slate);">
-      You'll rate yourself across 13 areas that drive execution — from prioritization to delegation —
-      then answer a few quick questions about how work actually gets done. In under 10 minutes you'll get
-      a clear picture of what's working, what's costing you time and momentum, and the highest-leverage
-      places to focus first.
+      A clear picture of what's working, what's costing you time and momentum, and the highest-leverage
+      places to focus first — built for owners and executives, not clinicians.
     </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Tell us about you</div>
+        <div class="step-desc">Name, email, and who referred you — takes 30 seconds.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Rate 13 areas</div>
+        <div class="step-desc">A quick 1–5 self-rating across how execution actually happens. About 10 minutes.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Get your results</div>
+        <div class="step-desc">An instant report with your top focus areas and a 90-day plan — right on this page.</div>
+      </div>
+    </div>
+
     <button class="primary" id="start-btn" onclick="startFreshAssessment()">Start My Scorecard</button>
     <div class="intro-nav">
       <button class="secondary" id="history-nav-btn" onclick="goTo('history')">Client Scorecards</button>
@@ -256,6 +406,10 @@
 
   <!-- ASSESSMENT -->
   <div id="screen-assessment" class="card hidden">
+    <div class="progress-track-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-label" id="progress-label">0 of 13 areas rated</div>
+    </div>
     <h2>Your Details</h2>
     <div class="field-group"><label>Full Name</label><input type="text" id="client-name" placeholder="Jane Doe"></div>
     <div class="field-group"><label>Email</label><input type="text" id="client-email" placeholder="jane@company.com"></div>
@@ -286,7 +440,6 @@
       <button class="secondary" onclick="goTo('intro')">Back</button>
       <button class="primary" id="submit-btn" onclick="generateReport()" style="flex:1;">See My Results</button>
     </div>
-    <div class="progress-note" id="progress-note"></div>
     <div class="progress-note" id="autosave-note"></div>
   </div>
 
@@ -488,9 +641,18 @@ function tierOf(id) {
   return PRIORITY_TIER.hasOwnProperty(id) ? PRIORITY_TIER[id] : 5;
 }
 
+// Purely visual grouping (by position in DOMAINS, which content-library edits
+// never reorder) so 13 ratings in a row read as three shorter, clearer chunks.
+const DOMAIN_GROUP_TITLES = {
+  0: "Planning & Follow-Through",
+  4: "Working Under Pressure & Change",
+  8: "Sustaining Execution",
+};
+
 function renderDomainList() {
   const container = document.getElementById("domain-list");
-  container.innerHTML = DOMAINS.map(d => `
+  container.innerHTML = DOMAINS.map((d, i) => `
+    ${DOMAIN_GROUP_TITLES[i] ? `<div class="domain-group-title">${DOMAIN_GROUP_TITLES[i]}</div>` : ""}
     <div class="domain-row">
       <div class="label">${d.name}</div>
       <div class="desc">${d.desc}</div>
@@ -534,7 +696,11 @@ function isValidEmail(value) {
 
 function updateProgress() {
   const answered = DOMAINS.filter(d => document.querySelector(`input[name="score-${d.id}"]:checked`)).length;
-  document.getElementById("progress-note").textContent = `${answered} of ${DOMAINS.length} areas rated`;
+  const pct = Math.round((answered / DOMAINS.length) * 100);
+  document.getElementById("progress-fill").style.width = `${pct}%`;
+  document.getElementById("progress-label").textContent = answered === DOMAINS.length
+    ? `All ${DOMAINS.length} areas rated`
+    : `${answered} of ${DOMAINS.length} areas rated — ${DOMAINS.length - answered} to go`;
   const client = collectClientDetails();
   const detailsComplete = client.name.length > 0 && isValidEmail(client.email);
   document.getElementById("submit-btn").disabled = answered < DOMAINS.length || !detailsComplete;
@@ -810,7 +976,23 @@ function renderReportFrom(scores, signal2Checked, systemsValue, meta) {
 
     <div class="card">
       <h2>Overview</h2>
-      <p style="font-size:14px; color:var(--slate);">${overview}</p>
+      <div class="score-chart">
+        <div class="score-chart-legend">
+          <span><i style="background:var(--strength)"></i>Strength (4–5)</span>
+          <span><i style="background:var(--refine)"></i>Refine (3)</span>
+          <span><i style="background:var(--leverage)"></i>Focus area (1–2)</span>
+        </div>
+        ${DOMAINS.map(d => `
+          <div class="score-row">
+            <div class="score-row-label" title="${d.name}">${d.name}</div>
+            <div class="score-row-track">
+              <div class="score-row-fill" style="width:${scores[d.id] * 20}%; background:var(--${classify(scores[d.id])});"></div>
+            </div>
+            <div class="score-row-value">${scores[d.id]}</div>
+          </div>
+        `).join("")}
+      </div>
+      <p style="font-size:14px; color:var(--slate); margin-top:18px;">${overview}</p>
     </div>
 
     <div class="card">
