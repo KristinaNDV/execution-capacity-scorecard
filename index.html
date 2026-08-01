@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Execution Capacity Scorecard</title>
+<style>
+  :root {
+    --navy: #14213d;
+    --navy-light: #1f2f52;
+    --slate: #495467;
+    --slate-light: #7a8499;
+    --gold: #b8862c;
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e1e4ea;
+    --strength: #2f7d5c;
+    --refine: #a8791c;
+    --leverage: #a5442a;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
+  header.app-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 28px 20px;
+  }
+  header.app-header .wrap { padding-top: 0; padding-bottom: 0; }
+  header.app-header h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: 0.2px; }
+  header.app-header p { margin: 0; color: #c7cede; font-size: 14px; max-width: 640px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 { margin-top: 0; font-size: 17px; color: var(--navy); }
+  .card h3 { font-size: 15px; color: var(--navy); margin-bottom: 6px; }
+  .muted { color: var(--slate-light); font-size: 13px; }
+
+  .domain-row { border-bottom: 1px solid var(--border); padding: 18px 0; }
+  .domain-row:last-child { border-bottom: none; }
+  .domain-row .label { font-weight: 600; font-size: 14.5px; margin-bottom: 2px; }
+  .domain-row .desc { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
+  .scale { display: flex; gap: 8px; }
+  .scale label {
+    flex: 1;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--slate);
+    user-select: none;
+    transition: all .12s ease;
+  }
+  .scale input { display: none; }
+  .scale input:checked + span { display: block; }
+  .scale label.selected {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+    font-weight: 600;
+  }
+  .scale-legend { display:flex; justify-content: space-between; font-size: 11px; color: var(--slate-light); margin-top: 4px; }
+
+  .signal-block { margin-top: 8px; }
+  .signal-block label.check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  .signal-block input[type=checkbox] { margin-top: 3px; }
+
+  select.systems-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  button.primary, a.primary {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 14px 22px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+  }
+  button.primary:disabled { background: #b8bdc9; cursor: not-allowed; }
+  button.secondary, a.secondary {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--navy);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .progress-note { text-align: center; font-size: 12.5px; color: var(--slate-light); margin-top: 10px; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+  .tag.strength { background: rgba(47,125,92,0.12); color: var(--strength); }
+  .tag.refine { background: rgba(168,121,28,0.12); color: var(--refine); }
+  .tag.leverage { background: rgba(165,68,42,0.12); color: var(--leverage); }
+
+  .strength-item, .area-item, .focus-item, .reflect-item { margin-bottom: 16px; }
+  .area-item { border-left: 3px solid var(--leverage); padding-left: 16px; }
+  .area-item .row { font-size: 13.5px; margin-bottom: 4px; }
+  .area-item .row strong { color: var(--navy); }
+  .area-item .action { background: #f8f4ea; border: 1px solid #ecdfc0; border-radius: 8px; padding: 10px 12px; font-size: 13.5px; margin-top: 8px; }
+
+  .focus-item { display: flex; gap: 12px; align-items: baseline; }
+  .focus-item .num { color: var(--gold); font-weight: 700; font-size: 14px; min-width: 22px; }
+
+  .reflect-item { font-style: italic; color: var(--navy-light); font-size: 14px; border-left: 3px solid var(--border); padding-left: 14px; }
+
+  .rec-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+  .rec-banner .friction-level { font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; color: #c7cede; }
+  .rec-banner .program-name { font-size: 20px; font-weight: 700; margin-top: 4px; }
+  .rec-banner .foci { font-size: 12.5px; color: #c7cede; margin-top: 6px; }
+
+  .strengths-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .strengths-grid { grid-template-columns: 1fr; } }
+  .strength-chip { background: rgba(47,125,92,0.08); border: 1px solid rgba(47,125,92,0.25); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+  .strength-chip strong { display:block; color: var(--strength); font-size: 13px; margin-bottom: 2px; }
+
+  .actions-row { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+
+  .disclaimer { font-size: 12px; color: var(--slate-light); border-top: 1px solid var(--border); padding-top: 14px; margin-top: 6px; }
+
+  .hidden { display: none !important; }
+
+  .intro-extra {
+    background: #f0f3f9;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .intro-extra .meta { font-size: 13px; color: var(--slate); }
+  .intro-extra .meta strong { color: var(--navy); display: block; font-size: 13.5px; }
+  .intro-nav { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  .field-group { margin-bottom: 14px; }
+  .field-group label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--slate-light); margin-bottom: 4px; }
+  .field-group input[type=text], .field-group textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--navy);
+    resize: vertical;
+  }
+  .field-group textarea { min-height: 54px; }
+  .library-domain { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+  .library-domain summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--navy); padding: 2px 0; }
+  .library-domain .domain-body { margin-top: 14px; }
+  .library-domain .reset-link { font-size: 12px; color: var(--leverage); background: none; border: none; cursor: pointer; padding: 0; font-weight: 600; }
+
+  .save-toast { font-size: 13px; color: var(--strength); font-weight: 600; text-align: center; margin-top: 10px; min-height: 18px; }
+
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .history-item:hover { border-color: var(--navy); }
+  .history-item .meta strong { display: block; font-size: 14px; color: var(--navy); }
+  .history-item .meta span { display: block; font-size: 12.5px; color: var(--slate-light); }
+  .history-item .delete-btn { font-size: 12px; color: var(--leverage); background: none; border: none; cursor: pointer; font-weight: 600; padding: 4px 8px; flex-shrink: 0; }
+
+  a.secondary, a.primary { text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="wrap">
+    <h1>Execution Capacity Scorecard</h1>
+    <p>A quick read on how well strategy turns into results in your business — where execution is strong, where it's quietly costing you time and momentum, and what to fix first. Built for owners and executives, in plain business language.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div id="screen-intro" class="card">
+    <div id="intro-extras"></div>
+    <h2>What this measures</h2>
+    <p class="muted" style="font-size:13.5px; color:var(--slate);">
+      You'll rate yourself across 13 areas that drive execution — from prioritization to delegation —
+      then answer a few quick questions about how work actually gets done. In under 10 minutes you'll get
+      a clear picture of what's working, what's costing you time and momentum, and the highest-leverage
+      places to focus first.
+    </p>
+    <button class="primary" id="start-btn" onclick="startFreshAssessment()">Start My Scorecard</button>
+    <div class="intro-nav">
+      <button class="secondary" id="history-nav-btn" onclick="goTo('history')">Client Scorecards</button>
+      <button class="secondary" onclick="goTo('library')">Edit Content Library</button>
+    </div>
+  </div>
+
+  <!-- ASSESSMENT -->
+  <div id="screen-assessment" class="card hidden">
+    <h2>Your Details</h2>
+    <div class="field-group"><label>Full Name</label><input type="text" id="client-name" placeholder="Jane Doe"></div>
+    <div class="field-group"><label>Email</label><input type="text" id="client-email" placeholder="jane@company.com"></div>
+    <div class="field-group"><label>Referring Consultant (optional)</label><input type="text" id="client-consultant" placeholder="Who shared this with you?"></div>
+
+    <h2 style="margin-top:28px;">Where You Stand Today</h2>
+    <p class="muted">Rate yourself 1–5 in each area below. Be honest — the results are only useful if the input is.</p>
+    <div id="domain-list"></div>
+
+    <h2 style="margin-top:28px;">A Few More Questions</h2>
+    <div class="signal-block">
+      <div class="label" style="font-weight:600; font-size:14px; margin-bottom:4px;">Which of these show up in how you currently operate? (check all that apply)</div>
+      <label class="check"><input type="checkbox" data-signal2 value="start"> Difficulty getting started on important work, even when it's clear what needs to happen</label>
+      <label class="check"><input type="checkbox" data-signal2 value="memory"> Reliance on memory rather than a system to track commitments and follow-ups</label>
+      <label class="check"><input type="checkbox" data-signal2 value="shifting"> Priorities shift constantly, making it hard to finish what was started</label>
+      <label class="check"><input type="checkbox" data-signal2 value="stalled"> Implementation regularly stalls after a strong start</label>
+    </div>
+
+    <div style="margin-top:18px;">
+      <div class="label" style="font-weight:600; font-size:14px;">Are operational systems (project tracking, delegation processes, planning tools) used consistently across your team?</div>
+      <select id="systems-select" class="systems-select">
+        <option value="consistent">Yes — used consistently</option>
+        <option value="inconsistent">No — inconsistent or ad hoc</option>
+      </select>
+    </div>
+
+    <div class="actions-row">
+      <button class="secondary" onclick="goTo('intro')">Back</button>
+      <button class="primary" id="submit-btn" onclick="generateReport()" style="flex:1;">See My Results</button>
+    </div>
+    <div class="progress-note" id="progress-note"></div>
+    <div class="progress-note" id="autosave-note"></div>
+  </div>
+
+  <!-- REPORT -->
+  <div id="screen-report" class="hidden"></div>
+
+  <!-- CONTENT LIBRARY -->
+  <div id="screen-library" class="card hidden">
+    <h2>Content Library</h2>
+    <p class="muted" style="font-size:13.5px; color:var(--slate);">
+      Edit the language used in every generated report — domain descriptions, interpretations, and
+      implementation actions — without touching code. Changes apply to every future report immediately.
+    </p>
+    <div id="library-list"></div>
+    <div class="actions-row">
+      <button class="secondary" onclick="goTo('intro')">Back</button>
+      <button class="secondary" onclick="resetAllContent()">Reset All to Defaults</button>
+      <button class="primary" style="flex:1;" onclick="saveContentLibrary()">Save Changes</button>
+    </div>
+    <div class="save-toast" id="library-toast"></div>
+
+    <h2 style="margin-top:32px;">Notifications</h2>
+    <p class="muted" style="font-size:13.5px; color:var(--slate);">
+      Get notified whenever a client completes a scorecard. The email option needs no setup — after each
+      submission you'll see a one-click "Notify Me" link that opens a pre-filled email in your own inbox.
+      The webhook is optional, for fully automatic notifications via a tool like Zapier or Make — leave it
+      blank if you don't need it.
+    </p>
+    <div class="field-group"><label>Notify This Email</label><input type="text" id="setting-notify-email" placeholder="you@yourbusiness.com"></div>
+    <div class="field-group"><label>Webhook URL (optional)</label><input type="text" id="setting-webhook-url" placeholder="https://hooks.zapier.com/..."></div>
+    <button class="secondary" onclick="saveNotificationSettings()">Save Notification Settings</button>
+    <div class="save-toast" id="settings-toast"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="screen-history" class="card hidden">
+    <h2>Client Scorecards</h2>
+    <p class="muted" style="font-size:13.5px; color:var(--slate);">
+      Every completed scorecard is saved on this device. Select one to reopen the full report or email it to the client.
+    </p>
+    <div id="history-list"></div>
+    <div class="actions-row">
+      <button class="secondary" onclick="goTo('intro')">Back</button>
+      <button class="secondary" id="clear-history-btn" onclick="clearHistory()">Clear History</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DEFAULT_DOMAINS = [
+  { id: "prioritization", name: "Prioritization", desc: "Distinguishing what matters most from what's simply urgent or visible.",
+    low: { meaning: "Difficulty distinguishing what matters most from what's merely urgent or visible.",
+      operational: "Energy spreads across too many initiatives; important work competes with noise; the team gets mixed signals about what's actually first.",
+      why: "Diluted focus slows execution of the highest-value work and erodes team clarity about what to do first.",
+      action: "Identify the single highest-leverage priority for the next 30 days and remove or delegate everything that doesn't serve it." },
+    strength: "Clear sense of what matters most, with the discipline to act on it first." },
+  { id: "task_initiation", name: "Getting Started", desc: "Starting important work once it's clear, without needing urgency to force your hand.",
+    low: { meaning: "Difficulty starting tasks even when they're understood and important.",
+      operational: "Delayed project starts, missed implementation timelines, reduced execution momentum, and growing reliance on urgency to act at all.",
+      why: "Slow starts compound into slipped timelines and a leadership pattern of reactive, last-minute execution.",
+      action: "Break the next stalled initiative into a single 15-minute first action and schedule it within 24 hours." },
+    strength: "Moves from decision to action quickly, keeping projects moving." },
+  { id: "follow_through", name: "Follow-Through", desc: "Carrying initiatives from launch to completion.",
+    low: { meaning: "Difficulty carrying initiatives from launch through to completion.",
+      operational: "Projects stall mid-implementation, commitments to the team or clients go unmet, and initiatives pile up half-finished.",
+      why: "Unfinished work erodes trust and ties up resources without producing results.",
+      action: "Pick one stalled initiative and define its final three steps to completion with dates attached." },
+    strength: "Reliably closes the loop on what gets started, building team trust." },
+  { id: "planning", name: "Planning", desc: "Translating goals into a structured, sequenced set of steps.",
+    low: { meaning: "Difficulty translating goals into a structured sequence of steps.",
+      operational: "Work proceeds without a clear roadmap; the team improvises; timelines get guessed rather than built.",
+      why: "Without a plan, execution depends on memory and momentum instead of a repeatable process.",
+      action: "Convert the current top priority into a written step sequence with owners and dates before starting execution." },
+    strength: "Converts goals into clear, sequenced plans that others can execute against." },
+  { id: "emotional_regulation", name: "Composure Under Pressure", desc: "Making steady, clear decisions when things get complicated or high-stakes.",
+    low: { meaning: "Decision-making and behavior shift significantly under pressure or complexity.",
+      operational: "Decision inconsistency under pressure, increased avoidance during complex situations, and reduced leadership bandwidth at high-stakes moments.",
+      why: "Inconsistent leadership behavior under pressure creates uncertainty for the team and can stall decisions exactly when they matter most.",
+      action: "Build a pre-decided pause protocol — a fixed wait period or checklist — for high-stakes decisions made under pressure." },
+    strength: "Maintains consistent, steady decision-making even under pressure." },
+  { id: "cognitive_flexibility", name: "Adaptability", desc: "Adjusting course cleanly when circumstances or information change.",
+    low: { meaning: "Difficulty adjusting approach when circumstances or information change.",
+      operational: "Rigid adherence to outdated plans, slow response to new information, and friction whenever priorities shift.",
+      why: "Conditions change faster than fixed plans can absorb; inflexibility slows response to what's actually happening.",
+      action: "Schedule a recurring short review point that explicitly asks: what's changed, and does the plan still hold?" },
+    strength: "Adapts plans quickly and cleanly when new information arrives." },
+  { id: "working_memory", name: "Mental Bandwidth", desc: "Holding multiple priorities and commitments in view without a system doing the remembering for you.",
+    low: { meaning: "Difficulty holding multiple pieces of information active at once without external support.",
+      operational: "Dependence on memory instead of systems, follow-up gaps, inconsistent project tracking, and delegation breakdowns.",
+      why: "When execution depends on memory, information and commitments get dropped as volume increases.",
+      action: "Move all open commitments out of memory and into a single external tracking system within the next week." },
+    strength: "Effectively externalizes information into systems rather than relying on memory." },
+  { id: "time_estimation", name: "Scheduling Accuracy", desc: "Accurately predicting how long work will actually take.",
+    low: { meaning: "Difficulty accurately predicting how long tasks or projects will take.",
+      operational: "Chronic schedule overruns, unreliable timelines communicated to stakeholders, and cascading delays across dependent work.",
+      why: "Inaccurate estimates undermine planning credibility and create downstream scheduling failures for the whole team.",
+      action: "Track actual time spent on the next five tasks before adjusting any planning or scheduling process." },
+    strength: "Produces reliable time estimates that hold up under real execution conditions." },
+  { id: "focus_control", name: "Focus Discipline", desc: "Sustaining attention on one thing at a time without drift or interruption.",
+    low: { meaning: "Difficulty sustaining attention on a single task without drift or interruption.",
+      operational: "Fragmented work sessions, frequent context-switching, and slower completion of deep or complex work.",
+      why: "Fragmented attention extends the time required for high-value work and increases error rates.",
+      action: "Protect one uninterrupted block of focus time daily for the highest-priority task." },
+    strength: "Sustains deep focus on priority work with minimal drift." },
+  { id: "environmental_organization", name: "Systems & Organization", desc: "Physical and digital workspaces structured to support how you actually work.",
+    low: { meaning: "Physical or digital workspaces lack the structure needed to support efficient execution.",
+      operational: "Time lost searching for information, inconsistent handoffs, and avoidable friction in day-to-day operations.",
+      why: "Disorganized environments create small daily frictions that compound into meaningful lost execution time.",
+      action: "Designate one system of record for your highest-traffic type of information and migrate current work into it." },
+    strength: "Maintains organized systems that reduce friction for the whole team." },
+  { id: "recovery_reset", name: "Recovery Rhythm", desc: "Stepping back and recovering capacity between high-demand stretches.",
+    low: { meaning: "Difficulty stepping back and recovering capacity between high-demand periods.",
+      operational: "Sustained high output without recovery, declining decision quality over time, and rising burnout risk for you and, by example, your team.",
+      why: "Without recovery, execution quality degrades over time even when effort stays high.",
+      action: "Schedule one non-negotiable recovery block this week and protect it as you would a client commitment." },
+    strength: "Builds recovery into the operating rhythm, sustaining performance over time." },
+  { id: "capacity_buffers", name: "Capacity Buffers", desc: "Margin held between commitments to absorb the unexpected.",
+    low: { meaning: "Little to no margin exists between commitments, leaving no room to absorb the unexpected.",
+      operational: "Any disruption cascades into missed deadlines; new opportunities can't be absorbed without dropping something else.",
+      why: "Zero-margin operations are fragile — a single disruption can destabilize the entire execution plan.",
+      action: "Deliberately hold back a fixed percentage of capacity (roughly 15–20%) from new commitments for the next planning cycle." },
+    strength: "Maintains margin that absorbs disruption without destabilizing execution." },
+  { id: "delegation_execution", name: "Delegation", desc: "Transferring ownership of work in a way that actually sticks.",
+    low: { meaning: "Difficulty transferring ownership of work to others in a way that actually sticks.",
+      operational: "Delegated tasks bounce back, the leader remains the bottleneck, and team capacity goes underused.",
+      why: "Without effective delegation, leadership capacity becomes the ceiling on organizational output.",
+      action: "Delegate one recurring task this week with a clear outcome, deadline, and decision-making authority attached." },
+    strength: "Delegates effectively, expanding execution capacity beyond personal bandwidth." },
+];
+
+// --- Storage: content library overrides, in-progress draft, and completed-assessment history.
+// All persistence is client-side (localStorage) — this is a static, no-backend app.
+const STORAGE_KEYS = {
+  content: "efa_content_overrides",
+  draft: "efa_draft",
+  history: "efa_history",
+  settings: "efa_settings",
+};
+
+function loadSettings() {
+  return loadJSON(STORAGE_KEYS.settings, { notifyEmail: "kristina@neurodivergentventures.com", webhookUrl: "" });
+}
+function saveSettings(settings) {
+  saveJSON(STORAGE_KEYS.settings, settings);
+}
+
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+function saveJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function loadContentOverrides() {
+  return loadJSON(STORAGE_KEYS.content, {});
+}
+
+function mergeDomains(overrides) {
+  return DEFAULT_DOMAINS.map(d => {
+    const o = overrides[d.id] || {};
+    return {
+      id: d.id,
+      name: o.name ?? d.name,
+      desc: o.desc ?? d.desc,
+      strength: o.strength ?? d.strength,
+      low: {
+        meaning: o.meaning ?? d.low.meaning,
+        operational: o.operational ?? d.low.operational,
+        why: o.why ?? d.low.why,
+        action: o.action ?? d.low.action,
+      },
+    };
+  });
+}
+
+// Current, possibly-edited domain content. Reassigned (not mutated) whenever
+// content library edits are saved, so every function that reads DOMAINS at
+// call time automatically picks up the latest text.
+let DOMAINS = mergeDomains(loadContentOverrides());
+
+// Fixed priority tiers (lower = higher priority) encode the stated business rules:
+// emotional regulation before systems work; capacity/margin before scheduling tools;
+// time estimation before planning. Using fixed tiers (rather than pairwise rules)
+// guarantees a consistent total order with no possibility of circular ranking.
+const PRIORITY_TIER = {
+  emotional_regulation: 0,
+  capacity_buffers: 1,
+  time_estimation: 2,
+  planning: 3,
+  prioritization: 4,
+};
+function tierOf(id) {
+  return PRIORITY_TIER.hasOwnProperty(id) ? PRIORITY_TIER[id] : 5;
+}
+
+function renderDomainList() {
+  const container = document.getElementById("domain-list");
+  container.innerHTML = DOMAINS.map(d => `
+    <div class="domain-row">
+      <div class="label">${d.name}</div>
+      <div class="desc">${d.desc}</div>
+      <div class="scale" data-domain="${d.id}">
+        ${[1,2,3,4,5].map(v => `
+          <label data-value="${v}">
+            <input type="radio" name="score-${d.id}" value="${v}">
+            <span>${v}</span>
+          </label>
+        `).join("")}
+      </div>
+      <div class="scale-legend"><span>Room to grow</span><span>Strength</span></div>
+    </div>
+  `).join("");
+
+  container.querySelectorAll(".scale").forEach(scale => {
+    scale.querySelectorAll("label").forEach(label => {
+      label.addEventListener("click", () => {
+        scale.querySelectorAll("label").forEach(l => l.classList.remove("selected"));
+        label.classList.add("selected");
+        label.querySelector("input").checked = true;
+        updateProgress();
+        saveDraft();
+      });
+    });
+  });
+}
+
+function syncSelectedClasses() {
+  document.querySelectorAll(".scale").forEach(scale => {
+    const checked = scale.querySelector("input:checked");
+    scale.querySelectorAll("label").forEach(l => {
+      l.classList.toggle("selected", checked && l.querySelector("input") === checked);
+    });
+  });
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function updateProgress() {
+  const answered = DOMAINS.filter(d => document.querySelector(`input[name="score-${d.id}"]:checked`)).length;
+  document.getElementById("progress-note").textContent = `${answered} of ${DOMAINS.length} areas rated`;
+  const client = collectClientDetails();
+  const detailsComplete = client.name.length > 0 && isValidEmail(client.email);
+  document.getElementById("submit-btn").disabled = answered < DOMAINS.length || !detailsComplete;
+}
+
+function goTo(screen) {
+  ["intro","assessment","report","library","history"].forEach(s => {
+    document.getElementById("screen-" + s).classList.toggle("hidden", s !== screen);
+  });
+  if (screen === "intro") renderIntroExtras();
+  if (screen === "library") { renderContentLibrary(); renderNotificationSettings(); }
+  if (screen === "history") renderHistoryList();
+  window.scrollTo(0,0);
+}
+
+function collectScores() {
+  const scores = {};
+  DOMAINS.forEach(d => {
+    const el = document.querySelector(`input[name="score-${d.id}"]:checked`);
+    scores[d.id] = el ? parseInt(el.value, 10) : null;
+  });
+  return scores;
+}
+
+function collectSignalInputs() {
+  return {
+    signal2Checked: Array.from(document.querySelectorAll("[data-signal2]:checked")).map(el => el.value),
+    systemsValue: document.getElementById("systems-select").value,
+  };
+}
+
+function collectClientDetails() {
+  return {
+    name: document.getElementById("client-name").value.trim(),
+    email: document.getElementById("client-email").value.trim(),
+    consultant: document.getElementById("client-consultant").value.trim(),
+  };
+}
+
+// --- In-progress draft autosave (so a refresh or accidental close doesn't lose answers).
+function saveDraft() {
+  const { signal2Checked, systemsValue } = collectSignalInputs();
+  const client = collectClientDetails();
+  saveJSON(STORAGE_KEYS.draft, { scores: collectScores(), signal2Checked, systemsValue, client, savedAt: Date.now() });
+  const note = document.getElementById("autosave-note");
+  if (note) note.textContent = "Answers saved automatically";
+}
+
+function loadDraft() {
+  return loadJSON(STORAGE_KEYS.draft, null);
+}
+
+function clearDraft() {
+  localStorage.removeItem(STORAGE_KEYS.draft);
+}
+
+function applyDraftToForm(draft) {
+  DOMAINS.forEach(d => {
+    const score = draft.scores ? draft.scores[d.id] : null;
+    if (score) {
+      const input = document.querySelector(`input[name="score-${d.id}"][value="${score}"]`);
+      if (input) input.checked = true;
+    }
+  });
+  document.querySelectorAll("[data-signal2]").forEach(cb => {
+    cb.checked = (draft.signal2Checked || []).includes(cb.value);
+  });
+  document.getElementById("systems-select").value = draft.systemsValue || "consistent";
+  const client = draft.client || {};
+  document.getElementById("client-name").value = client.name || "";
+  document.getElementById("client-email").value = client.email || "";
+  document.getElementById("client-consultant").value = client.consultant || document.getElementById("client-consultant").value;
+  syncSelectedClasses();
+  updateProgress();
+}
+
+function startFreshAssessment() {
+  const existing = loadDraft();
+  if (existing && Object.values(existing.scores || {}).some(s => s !== null)) {
+    if (!confirm("This discards your in-progress answers and starts a blank assessment. Continue?")) return;
+  }
+  restartAssessment(false);
+  goTo("assessment");
+}
+
+function resumeDraft() {
+  const draft = loadDraft();
+  if (!draft) return;
+  goTo("assessment");
+  applyDraftToForm(draft);
+}
+
+function classify(score) {
+  if (score >= 4) return "strength";
+  if (score === 3) return "refine";
+  return "leverage";
+}
+
+function pickTop3(scores) {
+  let candidates = DOMAINS.filter(d => classify(scores[d.id]) === "leverage");
+  if (candidates.length < 3) {
+    const refine = DOMAINS.filter(d => classify(scores[d.id]) === "refine");
+    candidates = candidates.concat(refine);
+  }
+  candidates.sort((a, b) => {
+    const tierDiff = tierOf(a.id) - tierOf(b.id);
+    if (tierDiff !== 0) return tierDiff;
+    const scoreDiff = scores[a.id] - scores[b.id];
+    if (scoreDiff !== 0) return scoreDiff;
+    return DOMAINS.indexOf(a) - DOMAINS.indexOf(b);
+  });
+  return candidates.slice(0, 3);
+}
+
+function computeSignals(scores, signal2Checked, systemsValue) {
+  const leverageCount = DOMAINS.filter(d => classify(scores[d.id]) === "leverage").length;
+  const signal1 = leverageCount >= 3;
+  const signal2 = signal2Checked.length > 0;
+  const signal3 = systemsValue === "inconsistent";
+  return { signal1, signal2, signal3, count: [signal1, signal2, signal3].filter(Boolean).length };
+}
+
+function recommendationFor(count) {
+  if (count >= 3) {
+    return { level: "Significant", program: "Leadership Stabilization Intensive",
+      foci: ["Leadership operating systems", "Delegation structure", "Reducing mental load", "Team execution infrastructure"] };
+  }
+  if (count === 2) {
+    return { level: "Moderate", program: "Leadership Stabilization Sprint",
+      foci: ["Workflow clarity", "Getting started", "Systems over memory", "Consistent execution"] };
+  }
+  return { level: "Light", program: "Micro Intervention",
+    foci: ["Prioritization", "Focus", "Follow-through"] };
+}
+
+function buildNinetyDayFocus(top3, scores) {
+  const items = top3.map(d => `${d.name}: ${d.low.action}`);
+  const used = new Set(top3.map(d => d.id));
+  const remaining = DOMAINS
+    .filter(d => !used.has(d.id) && classify(scores[d.id]) !== "strength")
+    .sort((a, b) => scores[a.id] - scores[b.id]);
+  for (const d of remaining) {
+    if (items.length >= 5) break;
+    items.push(`${d.name}: ${d.low.action}`);
+    used.add(d.id);
+  }
+  // Do not backfill with strength domains — there is no real improvement action to give there.
+  return items.slice(0, 5);
+}
+
+const REFLECTION_QUESTIONS = [
+  "Where in your current operating rhythm are the most important initiatives losing momentum, and what's actually causing the stall?",
+  "In your last high-pressure decision, did you follow a deliberate process, or default to instinct under stress — and which do you want going forward?",
+  "Which task on your plate right now would create the most leverage if it were fully owned by someone else, and what's stopping you from handing it off?",
+  "How much unscheduled margin exists in your calendar this month, and what happens to your execution plan if something unexpected lands?",
+  "Which commitment from the last 90 days is still unfinished, and what would it take to close it out this week?",
+];
+
+function generateReport() {
+  const scores = collectScores();
+  if (Object.values(scores).some(s => s === null)) return;
+  const client = collectClientDetails();
+  if (!client.name || !isValidEmail(client.email)) return;
+  const { signal2Checked, systemsValue } = collectSignalInputs();
+
+  const entry = { id: Date.now(), savedAt: Date.now(), scores, signal2Checked, systemsValue, client };
+  const history = loadJSON(STORAGE_KEYS.history, []);
+  history.unshift(entry);
+  saveJSON(STORAGE_KEYS.history, history.slice(0, 50));
+  clearDraft();
+  notifyConsultantOfSubmission(entry);
+
+  renderReportFrom(scores, signal2Checked, systemsValue, { viewingPast: false, client });
+}
+
+// Fires an optional webhook (e.g. Zapier/Make) if one is configured in Notification
+// settings, so a remote client's submission can trigger fully automatic notification.
+// Silently does nothing if no webhook URL has been set — this is an opt-in extra on
+// top of the always-available "Notify Me" mailto link shown on the report screen.
+function notifyConsultantOfSubmission(entry) {
+  const settings = loadSettings();
+  if (!settings.webhookUrl) return;
+  fetch(settings.webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: entry.client.name,
+      email: entry.client.email,
+      consultant: entry.client.consultant,
+      submittedAt: new Date(entry.savedAt).toISOString(),
+    }),
+  }).catch(err => console.warn("Notification webhook failed:", err));
+}
+
+function viewHistoryEntry(id) {
+  const entry = loadJSON(STORAGE_KEYS.history, []).find(h => h.id === id);
+  if (!entry) return;
+  renderReportFrom(entry.scores, entry.signal2Checked, entry.systemsValue, { viewingPast: true, savedAt: entry.savedAt, client: entry.client || {} });
+}
+
+function buildClientEmailLink(client, rec, top3, ninetyDay) {
+  const subject = "Your Execution Capacity Scorecard Results";
+  const lines = [
+    `Hi ${(client.name || "").split(" ")[0] || "there"},`,
+    "",
+    "Here's a summary of your Execution Capacity Scorecard results.",
+    "",
+    `Execution Friction Level: ${rec.level} — ${rec.program}`,
+    "",
+    "Top Focus Areas:",
+    ...top3.map((d, i) => `${i + 1}. ${d.name} — ${d.low.action}`),
+    "",
+    "Your 90-Day Focus:",
+    ...ninetyDay.map((item, i) => `${i + 1}. ${item}`),
+    "",
+    "Let's talk through what this means and how we tackle it together.",
+  ];
+  return `mailto:${client.email || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
+}
+
+function buildNotifyConsultantLink(client, rec, top3) {
+  const settings = loadSettings();
+  const subject = `Scorecard completed: ${client.name || "Unnamed client"}`;
+  const lines = [
+    `${client.name || "A client"} just completed the Execution Capacity Scorecard.`,
+    "",
+    `Email: ${client.email || "n/a"}`,
+    `Referring consultant: ${client.consultant || "Not specified"}`,
+    `Execution Friction Level: ${rec.level} (${rec.program})`,
+    `Top Focus Areas: ${top3.map(d => d.name).join(", ") || "None"}`,
+  ];
+  return `mailto:${settings.notifyEmail || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
+}
+
+function renderReportFrom(scores, signal2Checked, systemsValue, meta) {
+  const client = meta.client || {};
+  const strengths = DOMAINS.filter(d => classify(scores[d.id]) === "strength");
+  const top3 = pickTop3(scores);
+  const signals = computeSignals(scores, signal2Checked, systemsValue);
+  const rec = recommendationFor(signals.count);
+  const ninetyDay = buildNinetyDayFocus(top3, scores);
+
+  const leverageCount = DOMAINS.filter(d => classify(scores[d.id]) === "leverage").length;
+  const refineCount = DOMAINS.filter(d => classify(scores[d.id]) === "refine").length;
+  const topNames = top3.map(d => d.name).join(", ");
+
+  const overview = `Across the ${DOMAINS.length} areas assessed for ${client.name || "this client"}, the profile shows ${strengths.length} clear
+    strength${strengths.length === 1 ? "" : "s"}, ${refineCount} area${refineCount === 1 ? "" : "s"} ready for refinement, and
+    ${leverageCount} high-leverage focus point${leverageCount === 1 ? "" : "s"}. The concentrated leverage here
+    sits in ${topNames || "no single area"} — meaning targeted work in a small number of areas is likely to produce outsized gains in
+    execution capacity, ahead of adding new systems or productivity tools.`;
+
+  const html = `
+    ${meta.viewingPast ? `<p class="muted" style="margin-bottom:14px;">Viewing a scorecard completed by ${client.name || "this client"} on ${new Date(meta.savedAt).toLocaleString()}.</p>` : ""}
+    <div class="rec-banner">
+      <div>
+        <div class="friction-level">Execution Friction Level: ${rec.level}</div>
+        <div class="program-name">${rec.program}</div>
+        <div class="foci">Focus: ${rec.foci.join(" · ")}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Overview</h2>
+      <p style="font-size:14px; color:var(--slate);">${overview}</p>
+    </div>
+
+    <div class="card">
+      <h2>Strengths</h2>
+      <div class="strengths-grid">
+        ${strengths.length ? strengths.map(d => `
+          <div class="strength-chip">
+            <strong>${d.name}</strong>${d.strength}
+          </div>
+        `).join("") : `<p class="muted">No areas scored 4 or above in this scorecard.</p>`}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Areas to Strengthen</h2>
+      <p class="muted">The three highest-leverage focus areas, prioritized by operational impact.</p>
+      ${top3.length === 0 ? `<p class="muted">No refinement or high-leverage areas identified — every domain scored as a strength in this assessment.</p>` : top3.map(d => `
+        <div class="area-item">
+          <span class="tag ${classify(scores[d.id]) === 'leverage' ? 'leverage' : 'refine'}">${d.name}</span>
+          <div class="row"><strong>What this means:</strong> ${d.low.meaning}</div>
+          <div class="row"><strong>How it shows up operationally:</strong> ${d.low.operational}</div>
+          <div class="row"><strong>Why it matters:</strong> ${d.low.why}</div>
+          <div class="action"><strong>Implementation action:</strong> ${d.low.action}</div>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="card">
+      <h2>Strategic 90-Day Focus</h2>
+      ${ninetyDay.length === 0
+        ? `<p class="muted">No improvement actions to prioritize — every area scored as a strength. Focus the next 90 days on maintaining current systems and extending them to the rest of the team.</p>`
+        : ninetyDay.map((item, i) => `
+        <div class="focus-item"><span class="num">${i+1}.</span><span>${item}</span></div>
+      `).join("")}
+    </div>
+
+    <div class="card">
+      <h2>Reflection Questions</h2>
+      ${REFLECTION_QUESTIONS.map(q => `<div class="reflect-item">${q}</div>`).join("")}
+    </div>
+
+    <div class="card">
+      <div class="disclaimer">
+        This report evaluates leadership execution patterns only — how work actually gets done in the
+        business, not who someone is. It is not a diagnostic, psychological, or medical instrument, and does
+        not identify or imply any condition.
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <a class="secondary" href="${buildClientEmailLink(client, rec, top3, ninetyDay)}">Email Report to Client</a>
+      ${meta.viewingPast ? "" : `<a class="secondary" href="${buildNotifyConsultantLink(client, rec, top3)}">Notify Me</a>`}
+      <button class="secondary" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+    <div class="actions-row">
+      <button class="secondary" onclick="goTo('${meta.viewingPast ? "history" : "assessment"}')">${meta.viewingPast ? "Back to Client Scorecards" : "Edit Answers"}</button>
+      <button class="primary" style="flex:1;" onclick="restartAssessment()">Start a New Scorecard</button>
+    </div>
+  `;
+
+  document.getElementById("screen-report").innerHTML = html;
+  goTo("report");
+}
+
+function restartAssessment(goToIntro = true) {
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.querySelectorAll('.scale label').forEach(l => l.classList.remove('selected'));
+  document.querySelectorAll('[data-signal2]').forEach(c => c.checked = false);
+  document.getElementById('systems-select').value = 'consistent';
+  document.getElementById('client-name').value = '';
+  document.getElementById('client-email').value = '';
+  // Consultant attribution belongs to the shared link/session, not one client —
+  // leave it as-is (whether prefilled via ?consultant= or typed) across resets.
+  clearDraft();
+  updateProgress();
+  const note = document.getElementById('autosave-note');
+  if (note) note.textContent = '';
+  if (goToIntro) goTo('intro');
+}
+
+// --- Intro screen: surface an in-progress draft and the history count.
+function renderIntroExtras() {
+  const draft = loadDraft();
+  const history = loadJSON(STORAGE_KEYS.history, []);
+  const container = document.getElementById('intro-extras');
+  const historyBtn = document.getElementById('history-nav-btn');
+  const startBtn = document.getElementById('start-btn');
+  if (historyBtn) {
+    historyBtn.textContent = `Client Scorecards (${history.length})`;
+    historyBtn.disabled = history.length === 0;
+  }
+
+  const hasDraftAnswers = draft && Object.values(draft.scores || {}).some(s => s !== null);
+  if (!container) return;
+  if (hasDraftAnswers) {
+    const answered = Object.values(draft.scores).filter(s => s !== null).length;
+    container.innerHTML = `
+      <div class="intro-extra">
+        <div class="meta"><strong>In-progress scorecard saved</strong>${answered} of ${DOMAINS.length} areas rated &middot; saved ${new Date(draft.savedAt).toLocaleString()}</div>
+        <div style="display:flex; gap:8px;">
+          <button class="secondary" onclick="discardDraft()">Discard</button>
+          <button class="primary" style="padding:10px 16px; width:auto;" onclick="resumeDraft()">Resume</button>
+        </div>
+      </div>`;
+    if (startBtn) startBtn.textContent = 'Start New Scorecard';
+  } else {
+    container.innerHTML = '';
+    if (startBtn) startBtn.textContent = 'Start My Scorecard';
+  }
+}
+
+function discardDraft() {
+  clearDraft();
+  renderIntroExtras();
+}
+
+// --- Past-assessment history.
+function renderHistoryList() {
+  const history = loadJSON(STORAGE_KEYS.history, []);
+  const container = document.getElementById('history-list');
+  const clearBtn = document.getElementById('clear-history-btn');
+  if (clearBtn) clearBtn.disabled = history.length === 0;
+  if (history.length === 0) {
+    container.innerHTML = `<p class="muted">No completed scorecards yet.</p>`;
+    return;
+  }
+  container.innerHTML = history.map(entry => {
+    const top3 = pickTop3(entry.scores);
+    const signals = computeSignals(entry.scores, entry.signal2Checked, entry.systemsValue);
+    const rec = recommendationFor(signals.count);
+    const client = entry.client || {};
+    const contactLine = [client.email, client.consultant ? `via ${client.consultant}` : ""].filter(Boolean).join(" · ");
+    return `
+      <div class="history-item" onclick="viewHistoryEntry(${entry.id})">
+        <div class="meta">
+          <strong>${escapeHtml(client.name || "Unnamed")} &middot; ${new Date(entry.savedAt).toLocaleDateString()}</strong>
+          <span>${rec.level} friction &middot; Top focus: ${top3.map(d => d.name).join(', ') || 'None'}</span>
+          ${contactLine ? `<span>${escapeHtml(contactLine)}</span>` : ""}
+        </div>
+        <button class="delete-btn" onclick="event.stopPropagation(); deleteHistoryEntry(${entry.id})">Delete</button>
+      </div>`;
+  }).join('');
+}
+
+function deleteHistoryEntry(id) {
+  const history = loadJSON(STORAGE_KEYS.history, []).filter(h => h.id !== id);
+  saveJSON(STORAGE_KEYS.history, history);
+  renderHistoryList();
+}
+
+function clearHistory() {
+  if (!confirm('Delete all saved client scorecards? This cannot be undone.')) return;
+  saveJSON(STORAGE_KEYS.history, []);
+  renderHistoryList();
+}
+
+// --- Content library: edit report language without touching code.
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escapeAttr(str) {
+  return escapeHtml(str).replace(/"/g, '&quot;');
+}
+
+function renderContentLibrary() {
+  const container = document.getElementById('library-list');
+  container.innerHTML = DOMAINS.map(d => `
+    <details class="library-domain" data-lib-domain="${d.id}">
+      <summary>${escapeHtml(d.name)}</summary>
+      <div class="domain-body">
+        <div class="field-group"><label>Display Name</label><input type="text" data-field="name" value="${escapeAttr(d.name)}"></div>
+        <div class="field-group"><label>Short Description</label><input type="text" data-field="desc" value="${escapeAttr(d.desc)}"></div>
+        <div class="field-group"><label>What Low Scores Mean</label><textarea data-field="meaning">${escapeHtml(d.low.meaning)}</textarea></div>
+        <div class="field-group"><label>How It Shows Up Operationally</label><textarea data-field="operational">${escapeHtml(d.low.operational)}</textarea></div>
+        <div class="field-group"><label>Why It Matters</label><textarea data-field="why">${escapeHtml(d.low.why)}</textarea></div>
+        <div class="field-group"><label>Implementation Action</label><textarea data-field="action">${escapeHtml(d.low.action)}</textarea></div>
+        <div class="field-group"><label>Strength Statement (scores 4&ndash;5)</label><textarea data-field="strength">${escapeHtml(d.strength)}</textarea></div>
+        <button class="reset-link" onclick="resetDomainContent('${d.id}')">Reset this domain to default</button>
+      </div>
+    </details>
+  `).join('');
+}
+
+// Re-renders the assessment domain list (so edited names/descriptions show up)
+// without losing whatever the user has already answered.
+function refreshDomainListPreservingAnswers() {
+  const scores = collectScores();
+  const { signal2Checked, systemsValue } = collectSignalInputs();
+  renderDomainList();
+  applyDraftToForm({ scores, signal2Checked, systemsValue });
+}
+
+function saveContentLibrary() {
+  const overrides = loadContentOverrides();
+  document.querySelectorAll('#library-list [data-lib-domain]').forEach(el => {
+    const id = el.dataset.libDomain;
+    const get = (field) => el.querySelector(`[data-field="${field}"]`).value;
+    overrides[id] = {
+      name: get('name'), desc: get('desc'), meaning: get('meaning'),
+      operational: get('operational'), why: get('why'), action: get('action'), strength: get('strength'),
+    };
+  });
+  saveJSON(STORAGE_KEYS.content, overrides);
+  DOMAINS = mergeDomains(overrides);
+  refreshDomainListPreservingAnswers();
+  showLibraryToast('Saved — new language will appear in your next report.');
+}
+
+function resetDomainContent(id) {
+  const overrides = loadContentOverrides();
+  delete overrides[id];
+  saveJSON(STORAGE_KEYS.content, overrides);
+  DOMAINS = mergeDomains(overrides);
+  refreshDomainListPreservingAnswers();
+  renderContentLibrary();
+  showLibraryToast('Domain reset to default.');
+}
+
+function resetAllContent() {
+  if (!confirm('Reset all content library edits back to defaults?')) return;
+  localStorage.removeItem(STORAGE_KEYS.content);
+  DOMAINS = mergeDomains({});
+  refreshDomainListPreservingAnswers();
+  renderContentLibrary();
+  showLibraryToast('All content reset to defaults.');
+}
+
+function showLibraryToast(msg) {
+  const toast = document.getElementById('library-toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  setTimeout(() => { if (toast.textContent === msg) toast.textContent = ''; }, 3000);
+}
+
+// --- Notification settings: where completion pings go.
+function renderNotificationSettings() {
+  const settings = loadSettings();
+  document.getElementById('setting-notify-email').value = settings.notifyEmail || '';
+  document.getElementById('setting-webhook-url').value = settings.webhookUrl || '';
+}
+
+function saveNotificationSettings() {
+  const notifyEmail = document.getElementById('setting-notify-email').value.trim();
+  const webhookUrl = document.getElementById('setting-webhook-url').value.trim();
+  saveSettings({ notifyEmail, webhookUrl });
+  const toast = document.getElementById('settings-toast');
+  if (!toast) return;
+  toast.textContent = 'Notification settings saved.';
+  setTimeout(() => { if (toast.textContent === 'Notification settings saved.') toast.textContent = ''; }, 3000);
+}
+
+// A shared link (e.g. from a consultant) can carry ?consultant=Name to pre-fill attribution.
+function applyConsultantFromUrl() {
+  const consultant = new URLSearchParams(window.location.search).get('consultant');
+  if (consultant) document.getElementById('client-consultant').value = consultant;
+}
+
+renderDomainList();
+updateProgress();
+renderIntroExtras();
+applyConsultantFromUrl();
+document.querySelectorAll('[data-signal2]').forEach(cb => cb.addEventListener('change', saveDraft));
+document.getElementById('systems-select').addEventListener('change', saveDraft);
+document.getElementById('client-name').addEventListener('input', () => { updateProgress(); saveDraft(); });
+document.getElementById('client-email').addEventListener('input', () => { updateProgress(); saveDraft(); });
+document.getElementById('client-consultant').addEventListener('input', saveDraft);
+</script>
+
+</body>
+</html>
