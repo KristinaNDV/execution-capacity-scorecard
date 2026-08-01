@@ -705,27 +705,34 @@ function generateReport() {
   history.unshift(entry);
   saveJSON(STORAGE_KEYS.history, history.slice(0, 50));
   clearDraft();
-  notifyConsultantOfSubmission(entry);
 
-  renderReportFrom(scores, signal2Checked, systemsValue, { viewingPast: false, client });
+  renderReportFrom(scores, signal2Checked, systemsValue, { viewingPast: false, client, savedAt: entry.savedAt });
 }
 
-// Fires an optional webhook (e.g. Zapier/Make) if one is configured in Notification
-// settings, so a remote client's submission can trigger fully automatic notification.
-// Silently does nothing if no webhook URL has been set — this is an opt-in extra on
-// top of the always-available "Notify Me" mailto link shown on the report screen.
-function notifyConsultantOfSubmission(entry) {
+// Fires an optional webhook (e.g. a Google Apps Script Web App) if one is configured in
+// Notification settings, so a submission automatically logs to a sheet, emails the
+// consultant, and emails the client — with zero clicks from whoever filled out the form.
+// Silently does nothing if no webhook URL has been set — this is on top of the
+// always-available "Notify Me" / "Email Report to Client" manual links on the report screen.
+//
+// Uses no explicit Content-Type header (defaults to text/plain for a string body) and
+// mode: "no-cors" so this works against Google Apps Script Web Apps, which don't handle
+// CORS preflight requests — Apps Script still reads and parses the JSON body fine
+// regardless of the declared content type.
+function notifyConsultantOfSubmission({ client, rec, top3, ninetyDay, savedAt }) {
   const settings = loadSettings();
   if (!settings.webhookUrl) return;
+  const payload = {
+    client,
+    rec: { level: rec.level, program: rec.program, foci: rec.foci },
+    top3: top3.map(d => ({ name: d.name, action: d.low.action })),
+    ninetyDay,
+    submittedAt: new Date(savedAt).toISOString(),
+  };
   fetch(settings.webhookUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: entry.client.name,
-      email: entry.client.email,
-      consultant: entry.client.consultant,
-      submittedAt: new Date(entry.savedAt).toISOString(),
-    }),
+    mode: "no-cors",
+    body: JSON.stringify(payload),
   }).catch(err => console.warn("Notification webhook failed:", err));
 }
 
@@ -776,6 +783,10 @@ function renderReportFrom(scores, signal2Checked, systemsValue, meta) {
   const signals = computeSignals(scores, signal2Checked, systemsValue);
   const rec = recommendationFor(signals.count);
   const ninetyDay = buildNinetyDayFocus(top3, scores);
+
+  if (!meta.viewingPast) {
+    notifyConsultantOfSubmission({ client, rec, top3, ninetyDay, savedAt: meta.savedAt });
+  }
 
   const leverageCount = DOMAINS.filter(d => classify(scores[d.id]) === "leverage").length;
   const refineCount = DOMAINS.filter(d => classify(scores[d.id]) === "refine").length;
