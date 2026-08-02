@@ -292,6 +292,8 @@
   .intro-extra .meta { font-size: 13px; color: var(--slate); }
   .intro-extra .meta strong { color: var(--navy); display: block; font-size: 13.5px; }
   .intro-nav { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .admin-entry { margin-top: 18px; text-align: right; }
+  .admin-link { background: none; border: none; color: var(--slate-light); font-size: 11px; cursor: pointer; padding: 6px; text-decoration: underline; }
 
   .steps {
     display: grid;
@@ -401,9 +403,12 @@
     </div>
 
     <button class="primary" id="start-btn" onclick="startFreshAssessment()">Start My Scorecard</button>
-    <div class="intro-nav">
+    <div class="intro-nav hidden" id="admin-nav">
       <button class="secondary" id="history-nav-btn" onclick="goTo('history')">Client Scorecards</button>
       <button class="secondary" onclick="goTo('library')">Edit Content Library</button>
+    </div>
+    <div class="admin-entry" id="admin-entry">
+      <button class="admin-link" onclick="unlockAdminArea()">Admin</button>
     </div>
   </div>
 
@@ -1078,8 +1083,34 @@ function restartAssessment(goToIntro = true) {
   if (goToIntro) goTo('intro');
 }
 
+// --- Admin gate: keeps "Client Scorecards" (other clients' names/emails/results)
+// and "Edit Content Library" out of view for anyone who just opens the quiz link.
+// This is a client-side deterrent only — there is no backend, so a technical
+// visitor could still find ADMIN_PASSPHRASE by reading the page source. It stops
+// a curious client from stumbling into admin tools; it is not real access control.
+const ADMIN_PASSPHRASE = "ndv-admin-2026"; // change this string (and redeploy) to rotate it
+
+function isAdminUnlocked() {
+  return localStorage.getItem('efa_admin_unlocked') === '1';
+}
+
+function showAdminNav() {
+  document.getElementById('admin-nav').classList.remove('hidden');
+  document.getElementById('admin-entry').classList.add('hidden');
+}
+
+function unlockAdminArea() {
+  if (isAdminUnlocked()) { showAdminNav(); return; }
+  const attempt = prompt('Enter admin passphrase to access Client Scorecards and the Content Library:');
+  if (attempt === null) return;
+  if (attempt !== ADMIN_PASSPHRASE) { alert('Incorrect passphrase.'); return; }
+  localStorage.setItem('efa_admin_unlocked', '1');
+  showAdminNav();
+}
+
 // --- Intro screen: surface an in-progress draft and the history count.
 function renderIntroExtras() {
+  if (isAdminUnlocked()) showAdminNav();
   const draft = loadDraft();
   const history = loadJSON(STORAGE_KEYS.history, []);
   const container = document.getElementById('intro-extras');
