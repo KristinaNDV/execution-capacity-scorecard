@@ -79,19 +79,30 @@
   .card h3 { font-size: 15px; color: var(--navy); margin-bottom: 6px; }
   .muted { color: var(--slate-light); font-size: 13px; }
 
+  @media (max-width: 480px) {
+    .wrap { padding-left: 14px; padding-right: 14px; }
+    .card { padding: 16px; }
+    header.app-header { padding: 22px 14px 18px; }
+    header.app-header h1 { font-size: 21px; }
+  }
+
   .domain-row { border-bottom: 1px solid var(--border); padding: 18px 0; }
   .domain-row:last-child { border-bottom: none; }
   .domain-row .label { font-weight: 600; font-size: 14.5px; margin-bottom: 2px; }
   .domain-row .desc { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
-  .scale { display: flex; gap: 8px; }
+  .scale { display: flex; gap: 6px; }
   .scale label {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
     text-align: center;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 8px 4px;
+    padding: 8px 2px;
     cursor: pointer;
-    font-size: 12.5px;
+    font-size: 13.5px;
     color: var(--slate);
     user-select: none;
     transition: all .12s ease;
@@ -119,10 +130,10 @@
 
   select.systems-select {
     width: 100%;
-    padding: 10px;
+    padding: 12px 10px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    font-size: 14px;
+    font-size: 16px;
     margin-top: 6px;
   }
 
@@ -221,10 +232,22 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .score-row-bar { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
   .score-row-track { flex: 1; height: 9px; background: var(--border); border-radius: 5px; overflow: hidden; }
   .score-row-fill { height: 100%; border-radius: 5px; }
   .score-row-value { width: 14px; flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--navy); }
-  @media (max-width: 560px) { .score-row-label { width: 100px; font-size: 10.5px; } }
+  @media (max-width: 560px) {
+    .score-row { flex-direction: column; align-items: stretch; gap: 3px; margin-bottom: 12px; }
+    .score-row-label {
+      width: auto;
+      text-align: left;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+  }
 
   .rec-banner {
     display: flex;
@@ -306,8 +329,8 @@
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 9px 10px;
-    font-size: 13.5px;
+    padding: 11px 10px;
+    font-size: 16px;
     font-family: inherit;
     color: var(--navy);
     resize: vertical;
@@ -316,7 +339,7 @@
   .library-domain { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
   .library-domain summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--navy); padding: 2px 0; }
   .library-domain .domain-body { margin-top: 14px; }
-  .library-domain .reset-link { font-size: 12px; color: var(--leverage); background: none; border: none; cursor: pointer; padding: 0; font-weight: 600; }
+  .library-domain .reset-link { font-size: 12px; color: var(--leverage); background: none; border: none; cursor: pointer; padding: 10px 0; font-weight: 600; }
 
   .save-toast { font-size: 13px; color: var(--strength); font-weight: 600; text-align: center; margin-top: 10px; min-height: 18px; }
 
@@ -334,7 +357,7 @@
   .history-item:hover { border-color: var(--navy); }
   .history-item .meta strong { display: block; font-size: 14px; color: var(--navy); }
   .history-item .meta span { display: block; font-size: 12.5px; color: var(--slate-light); }
-  .history-item .delete-btn { font-size: 12px; color: var(--leverage); background: none; border: none; cursor: pointer; font-weight: 600; padding: 4px 8px; flex-shrink: 0; }
+  .history-item .delete-btn { font-size: 12px; color: var(--leverage); background: none; border: none; cursor: pointer; font-weight: 600; padding: 10px 10px; flex-shrink: 0; }
 
   a.secondary, a.primary { text-decoration: none; }
 </style>
@@ -964,11 +987,13 @@ function renderReportFrom(scores, signal2Checked, systemsValue, meta) {
         </div>
         ${DOMAINS.map(d => `
           <div class="score-row">
-            <div class="score-row-label" title="${d.name}">${d.name}</div>
-            <div class="score-row-track">
-              <div class="score-row-fill" style="width:${scores[d.id] * 20}%; background:var(--${classify(scores[d.id])});"></div>
+            <div class="score-row-label">${d.name}</div>
+            <div class="score-row-bar">
+              <div class="score-row-track">
+                <div class="score-row-fill" style="width:${scores[d.id] * 20}%; background:var(--${classify(scores[d.id])});"></div>
+              </div>
+              <div class="score-row-value">${scores[d.id]}</div>
             </div>
-            <div class="score-row-value">${scores[d.id]}</div>
           </div>
         `).join("")}
       </div>
