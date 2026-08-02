@@ -66,16 +66,6 @@
     letter-spacing: 0.2px;
   }
   header.app-header p { margin: 0; color: var(--slate); font-size: 14px; max-width: 620px; }
-  header.app-header .squiggle {
-    position: absolute;
-    top: -18px;
-    right: -10px;
-    width: 180px;
-    height: auto;
-    opacity: 0.9;
-    z-index: 0;
-  }
-  @media (max-width: 640px) { header.app-header .squiggle { width: 110px; top: -8px; } }
 
   .card {
     background: var(--card);
@@ -352,16 +342,6 @@
 <body>
 
 <header class="app-header">
-  <svg class="squiggle" viewBox="0 0 180 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <linearGradient id="squiggleGrad" x1="0%" y1="0%" x2="100%" y2="60%">
-        <stop offset="0%" stop-color="#df7b57"/>
-        <stop offset="100%" stop-color="#bb477a"/>
-      </linearGradient>
-    </defs>
-    <path d="M5 55 C 30 15, 55 65, 80 30 S 130 10, 150 40 S 165 60, 175 35"
-          stroke="url(#squiggleGrad)" stroke-width="7" fill="none" stroke-linecap="round"/>
-  </svg>
   <div class="wrap">
     <h1>Execution Capacity Scorecard</h1>
     <p>A quick read on how well strategy turns into results in your business — where execution is strong, where it's quietly costing you time and momentum, and what to fix first. Built for owners and executives, in plain business language.</p>
